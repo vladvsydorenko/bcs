@@ -1,0 +1,31 @@
+{
+    "compilerOptions": {
+      "outDir": "./build",
+      "module": "ES6",
+      "target": "ES6",
+      "moduleResolution": "Node",
+      "jsx": "react-jsx",
+      "declaration": true,
+      "strict": true,
+      "noImplicitAny": true,
+      "noImplicitThis": true,
+      "noImplicitReturns": true,
+      "alwaysStrict": true,
+      "strictBindCallApply": true,
+      "strictNullChecks": true,
+      "strictFunctionTypes": true,
+      "strictPropertyInitialization": true,
+      "sourceMap": true,
+      "baseUrl": "./src",
+      "paths": {
+        "@vladnets/*": ["../*"]
+      },
+    },
+    "include": [
+      "./src/**/*", "test/test",
+    ],
+    "exclude": [
+      "./build/**/*",
+      "./node_modules/**/*"
+    ]
+}
