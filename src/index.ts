@@ -1,4 +1,5 @@
-import { MessagePortSocket, PortProxyListenerFn } from "./MessagePortSocket";
+import { MessagePortSocket } from "./@vladnets/util-message-port/MessagePortSocket";
+import { PortProxyListenerFn } from "./@vladnets/util-message-port/PortProxyListenerFn";
 
 
 const channel = new MessageChannel();
