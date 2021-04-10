@@ -1,4 +1,4 @@
-# bcs
+# WorkerHub
 
 First of all, process should be able to transfer ArrayBuffer to another process.
 Each process is subscribing for buffer updates.
