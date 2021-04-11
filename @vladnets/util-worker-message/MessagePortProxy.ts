@@ -1,46 +1,34 @@
-import { PortListenerFn } from "./PortListenerFn";
-import { PortProxyListenerFn } from "./PortProxyListenerFn";
+import { MessagePortProxyListenerFn } from "./MessagePortProxyListenerFn";
+import { MessagePortSocket } from "./MessagePortSocket";
+import { WorkerMessageTools } from "./WorkerMessageTools";
 
-export class MessagePortSocket<T> {
-    public readonly port: MessagePort;
-    public readonly context: T;
+class MessagePortProxy2<T> {
+    public readonly sockets: MessagePortSocket<T>[] = [];
+    private _listenersReg: {
+        [type: string]: MessagePortProxyListenerFn<T, any>[];
+    } = {};
 
-    private _listenerMap: WeakMap<PortProxyListenerFn<T, any>, PortListenerFn<any>> = new WeakMap();
 
-    public constructor(
-        port: MessagePort,
-        context: T
-    ) {
-        this.port = port;
-        this.context = context;
+    public addPort(port: MessagePort, context: T) {
+        const socket = new MessagePortSocket<T>(port, context);
+        socket.addEventListener("message", this.onMessage.bind(this));
+    }
+
+    public removePort(port: MessagePort) {
+
     }
 
     public addEventListener<K extends keyof MessagePortEventMap>(
         type: K,
-        listener: PortProxyListenerFn<T, K>,
+        listener: MessagePortProxyListenerFn<T, K>,
         options?: boolean | AddEventListenerOptions
     ): void {
-        const portListener = (event: MessageEvent) => {
-            listener.call(this.port, event, this.context, this.port);
-        };
-
-        this._listenerMap.set(listener, portListener);
-
-        this.port.addEventListener(type, portListener, options);
     }
 
-    public removeEventListener<K extends keyof MessagePortEventMap>(
-        type: K,
-        listener: PortProxyListenerFn<T, K>,
-        options?: boolean | EventListenerOptions
-    ): void {
-        const portListener = this._listenerMap.get(listener);
-
-        if (!portListener) {
-            return;
-        }
-
-        this.port.removeEventListener(type, portListener, options);
+    private onMessage(ev: MessageEvent, context: T, port: MessagePort) {
+        this._listenersReg["message"].forEach(listener => {
+            listener(ev, context, port);
+        });
     }
 }
 
@@ -60,26 +48,32 @@ export class MessagePortProxy<T> {
         }
 
         const sockets: MessagePortSocket<T>[] = [];
-        for(let i = 0; i < len; i++) {
+        for (let i = 0; i < len; i++) {
             const port = ports[i];
             const context = contexts[i];
 
             const socket = new MessagePortSocket(port, context);
             sockets.push(socket);
+
+            port.postMessage
         }
 
         this.sockets = sockets;
     }
 
+    public addPort(id: number, port: MessagePort) {
+
+    }
+
     public addEventListener<K extends keyof MessagePortEventMap>(
         type: K,
-        listener: PortProxyListenerFn<T, K>,
+        listener: MessagePortProxyListenerFn<T, K>,
         options?: boolean | AddEventListenerOptions
     ): void {
         const { sockets: _sockets } = this;
         const len = _sockets.length;
 
-        for(let i = 0; i < len; i++) {
+        for (let i = 0; i < len; i++) {
             const socket = _sockets[i];
             socket.addEventListener(type, listener, options);
         }
@@ -87,15 +81,19 @@ export class MessagePortProxy<T> {
 
     public removeEventListener<K extends keyof MessagePortEventMap>(
         type: K,
-        listener: PortProxyListenerFn<T, K>,
+        listener: MessagePortProxyListenerFn<T, K>,
         options?: boolean | EventListenerOptions
     ): void {
         const { sockets: _sockets } = this;
         const len = _sockets.length;
 
-        for(let i = 0; i < len; i++) {
+        for (let i = 0; i < len; i++) {
             const socket = _sockets[i];
             socket.removeEventListener(type, listener, options);
         }
+    }
+
+    public postMessageToAll(message: any) {
+        WorkerMessageTools.postMessageToSockets(this.sockets, message);
     }
 }

@@ -18,11 +18,12 @@
       "sourceMap": true,
       "baseUrl": "./src",
       "paths": {
-        "@vladnets/*": ["../*"]
+        "@vladnets/*": ["../@vladnets/*"]
       },
     },
     "include": [
       "./src/**/*",
+      "./@vladnets/**/*/index.ts",
     ],
     "exclude": [
       "./build/**/*",
